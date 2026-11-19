@@ -16,12 +16,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Generate Upload Keystore
+      - name: Generate Upload Keystore (for Play Store AAB)
         working-directory: ps_src/app
         run: |
-          keytool -genkeypair -v -keystore release-key.jks -keyalg RSA -keysize 2048 -validity 10000 \
-            -alias nextplay -storepass "NextPlay2026!" -keypass "NextPlay2026!" \
-            -dname "CN=NEXT PLAY Player, OU=Media, O=NEXT PLAY, L=Lahore, S=Punjab, C=PK"
+          keytool -genkeypair -v -keystore release-key.jks -keyalg RSA -keysize 2048 -validity 10000             -alias nextplay -storepass "NextPlay2026!" -keypass "NextPlay2026!"             -dname "CN=NEXT PLAY Player, OU=Media, O=NEXT PLAY, L=Lahore, S=Punjab, C=PK"
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -29,7 +27,7 @@ jobs:
       - name: Build Play Store AAB & Test APK
         working-directory: ps_src
         run: gradle bundleRelease assembleDebug
-      - name: Upload Play Store Bundle
+      - name: Upload Play Store AAB + Keystore + APK
         uses: actions/upload-artifact@v4
         with:
           name: NextPlayPlayer-PlayStore-Bundle
