@@ -1,4 +1,4 @@
-name: Build NEXT PLAY IPTV APK
+name: Build NEXT PLAY Player (Play Store AAB + APK)
 on:
   push:
     branches: [ "main", "master" ]
@@ -9,22 +9,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Extract App Project
-        run: unzip -o NextPlayIPTV_Android_App.zip -d project_src
+      - name: Extract Play Store Project
+        run: unzip -o NextPlayPlayer_PlayStore.zip -d ps_src
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Generate Upload Keystore
+        working-directory: ps_src/app
+        run: |
+          keytool -genkeypair -v -keystore release-key.jks -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias nextplay -storepass "NextPlay2026!" -keypass "NextPlay2026!" \
+            -dname "CN=NEXT PLAY Player, OU=Media, O=NEXT PLAY, L=Lahore, S=Punjab, C=PK"
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
-      - name: Build Debug APK
-        working-directory: project_src
-        run: gradle assembleDebug
-      - name: Upload NextPlayIPTV APK
+          gradle-version: '8.9'
+      - name: Build Play Store AAB & Test APK
+        working-directory: ps_src
+        run: gradle bundleRelease assembleDebug
+      - name: Upload Play Store Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: NextPlayIPTV-Mobile-TV-APK
-          path: project_src/app/build/outputs/apk/debug/app-debug.apk
+          name: NextPlayPlayer-PlayStore-Bundle
+          path: |
+            ps_src/app/build/outputs/bundle/release/app-release.aab
+            ps_src/app/build/outputs/apk/debug/app-debug.apk
+            ps_src/app/release-key.jks
